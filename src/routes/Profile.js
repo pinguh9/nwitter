@@ -1,9 +1,10 @@
 import { authService, dbService } from "fBase";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-export default({userObj}) => {
+export default({ refreshUser, userObj}) => {
    const history = useHistory();
+   const [newDisplayName, setNewDisplayName] = useState(userObj.displayName);
     
    const OnLogOutClick = () =>{
         authService.signOut();
@@ -23,9 +24,46 @@ export default({userObj}) => {
     getMyNweets()
    },[])
 
+   const onChange = (event) => {
+       const{
+           target:{value},
+       } = event;
+       setNewDisplayName(value);
+   };
+
+   const onSubmit = async (event) => {
+       window.event.preventDefault();
+       if(userObj.displayName !== newDisplayName){
+           await userObj.updateProfile({
+               displayName : newDisplayName,
+           });
+           refreshUser();
+       }
+   }
+
     return (
-        <>
-            <button onClick = {OnLogOutClick}>Log Out</button>
-        </>
+                <div className="container">
+                    <form onSubmit = {onSubmit} className="profileForm">
+                    <input
+                        onChange = {onChange} 
+                        type = "text" 
+                        autoFocus
+                        placeholder = "DisplayName"
+                        value = {newDisplayName}
+                        className = "formInput"
+                    />
+                    <input 
+                        type = "submit" 
+                        value = "Update profile"
+                        className="formBtn"
+                        style={{
+                            marginTop:10,
+                        }}
+                    />
+            </form>
+            <span className="formBtn cancelBtn logOut" onClick={OnLogOutClick}>
+                Log Out
+            </span>
+        </div>
     );
 };
